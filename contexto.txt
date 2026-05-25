@@ -1,5 +1,4 @@
 # Contexto del proyecto StockScope
-
 ## Stack
 - Node.js + JavaScript (backend)
 - SQLite con better-sqlite3
@@ -8,27 +7,28 @@
 ## Arquitectura en capas
 - src/repository/ → habla con la base de datos
 - src/services/   → lógica de negocio y cálculos
-- src/routes/     → recibe pedidos web
-- public/         → interfaz de usuario
+- src/routes/     → recibe pedidos web (próxima etapa)
+- public/         → interfaz de usuario (próxima etapa)
 
 ## Estado actual
 - Etapa 1 ✅ Estructura del proyecto y Git
 - Etapa 2 ✅ Base de datos con 5 tablas y seed de 1300 cotizaciones
-- Etapa 3 🔄 En progreso: capa de servicios
-  - buscarEmpresa(nombre) ✅ completada
-  - verEvolucion(nombre) ⬜ en progreso
-  - compararEmpresas(nombre1, nombre2) ⬜ pendiente
-  - rankear(criterio) ⬜ pendiente
-  - filtrar(parametro, valor) ⬜ pendiente
+- Etapa 3 ✅ Capa de servicios completa
+- Etapa 4 ⬜ Pendiente: API con Express + interfaz web
+- Etapa 5 ⬜ Pendiente: README final y cierre
 
 ## Funciones completadas
 - src/repository/database.js → conexión y creación de tablas
 - src/repository/seed.js → carga datos iniciales
-- src/services/empresaService.js → buscarEmpresa lista
+- src/services/empresaService.js → todas las funciones completadas:
+  - buscarEmpresa(nombre) ✅
+  - verEvolucion(nombre) ✅ devuelve cotizaciones + resumen estadístico
+  - compararEmpresas(nombre1, nombre2) ✅ devuelve ambas evoluciones + ganadora
+  - rankear(criterio) ✅ criterios: variacion, precio_actual, volumen, volatilidad
+  - filtrar(parametro, valor) ✅ parámetros: sector, pais, precio_min, precio_max, variacion_positiva, variacion_negativa
 
 ## Próximos pasos
-1. Completar verEvolucion
-2. Completar compararEmpresas
-3. Completar rankear y filtrar
-4. Etapa 4: API con Express + interfaz web
-5. Etapa 5: README final y cierre
+1. Etapa 4: API con Express
+   - Definir rutas para cada función del servicio
+   - Interfaz web en public/
+2. Etapa 5: README final y cierre
