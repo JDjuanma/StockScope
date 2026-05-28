@@ -119,8 +119,12 @@ const filtrar = (parametro, valor) => {
         .map(({ cotizaciones, ...empresa }) => calcularMetricasEmpresa(empresa, cotizaciones))
         .filter(Boolean);
 
-    if (parametro === 'precio_min') return empresasConMetricas.filter((empresa) => empresa.precio_actual >= parseFloat(valor));
-    if (parametro === 'precio_max') return empresasConMetricas.filter((empresa) => empresa.precio_actual <= parseFloat(valor));
+    if (parametro === 'precio_min' || parametro === 'precio_max') {
+        const precio = parseFloat(valor);
+        if (isNaN(precio)) return { error: 'El valor debe ser un número' };
+        if (parametro === 'precio_min') return empresasConMetricas.filter((empresa) => empresa.precio_actual >= precio);
+        if (parametro === 'precio_max') return empresasConMetricas.filter((empresa) => empresa.precio_actual <= precio);
+    }
     if (parametro === 'variacion_positiva') return empresasConMetricas.filter((empresa) => empresa.variacion_porcentual > 0);
     if (parametro === 'variacion_negativa') return empresasConMetricas.filter((empresa) => empresa.variacion_porcentual < 0);
 };
