@@ -1,32 +1,32 @@
 ﻿# Contexto del proyecto StockScope
+
 ## Stack
 - Node.js + JavaScript
 - Express
 - SQLite con better-sqlite3
 - HTML/CSS/JS + Bootstrap
+- node:test para pruebas automatizadas
 
 ## Arquitectura en capas
-- src/repository/ → habla con la base de datos
-- src/services/   → lógica de negocio y cálculos
-- src/server.js   → API Express y archivos estáticos
-- public/         → interfaz web
+- `src/repository/` → conexión a la base de datos y consultas SQL
+- `src/services/` → lógica de negocio, cálculos y validaciones simples
+- `src/server.js` → API Express y servidor de archivos estáticos
+- `public/` → interfaz web con Bootstrap, CSS propio y JavaScript con fetch
+- `tests/` → pruebas automatizadas del servicio y datos semilla
 
 ## Estado actual
 - Etapa 1 ✅ Estructura del proyecto y Git
 - Etapa 2 ✅ Base de datos con 5 tablas y seed de 1300 cotizaciones
 - Etapa 3 ✅ Capa de servicios completa
-- Etapa 4 ✅ API con Express + interfaz web básica
-- Etapa 5 🟡 README mejorado; cierre final pendiente
+- Etapa 4 ✅ API con Express + interfaz web Bootstrap
+- Etapa 5 ✅ README mejorado, accesibilidad revisada y proyecto listo para entrega
 
 ## Funciones completadas
-- src/repository/database.js → conexión y creación de tablas
-- src/repository/seed.js → carga datos iniciales
-- src/services/empresaService.js → todas las funciones completadas:
-  - buscarEmpresa(nombre) ✅
-  - verEvolucion(nombre) ✅ devuelve cotizaciones + resumen estadístico
-  - compararEmpresas(nombre1, nombre2) ✅ devuelve ambas evoluciones + ganadora
-  - rankear(criterio) ✅ criterios: variacion, precio_actual, volumen, volatilidad
-  - filtrar(parametro, valor) ✅ parámetros: sector, pais, precio_min, precio_max, variacion_positiva, variacion_negativa
+- `buscarEmpresa(nombre)` ✅ devuelve datos principales, sector y país de origen
+- `verEvolucion(nombre)` ✅ devuelve cotizaciones + resumen estadístico
+- `compararEmpresas(nombre1, nombre2)` ✅ devuelve ambas evoluciones + ganadora
+- `rankear(criterio)` ✅ criterios: variacion, precio_actual, volumen, volatilidad
+- `filtrar(parametro, valor)` ✅ parámetros: sector, pais, precio_min, precio_max, variacion_positiva, variacion_negativa
 
 ## API Express completada
 - `GET /api/empresa/:nombre`
@@ -37,11 +37,37 @@
 
 ## Interfaz web completada
 - `public/index.html` → página principal con selector de funciones y secciones desplegables
-- `public/styles.css` → estilos propios mínimos
-- `public/app.js` → consumo de API con fetch y render de resultados
+- `public/styles.css` → estilos propios, foco visible y correcciones de contraste
+- `public/app.js` → consumo de API con fetch, render de resultados y lógica de visibilidad
 
-## Próximos pasos
-1. Revisar diseño visual final.
-2. Probar manualmente más casos de búsqueda/filtros.
-3. Cierre final del README si el docente pide más detalle.
+## Accesibilidad y UX
+- WAVE revisado y corregido
+- Inputs con labels accesibles
+- Skip link para saltar al contenido principal
+- `aria-controls`, `aria-expanded` y regiones `aria-live`
+- Tablas con caption y encabezados con scope
+- Filtros de variación positiva/negativa ocultan el campo de texto porque no usan valor
+- Filtro por país muestra dos columnas: País origen y Opera en
 
+## Verificación final
+- `npm.cmd test` → 8 tests OK
+- `http://localhost:3000/` → interfaz responde correctamente
+- `/api/empresa/Apple` → API responde correctamente
+- Git local alineado con `origin/main` al momento de la última revisión
+
+## Cómo ejecutar
+```bash
+npm install
+npm start
+```
+
+Luego abrir:
+
+```text
+http://localhost:3000
+```
+
+## Próximos pasos opcionales
+- Agregar gráficos visuales para evolución histórica
+- Mejorar diseño visual si el docente pide más presentación
+- Agregar más tests para endpoints Express
