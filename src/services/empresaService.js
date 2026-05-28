@@ -100,8 +100,8 @@ const rankear = (criterio) => {
     }
 
     return empresaRepository
-        .findAllBasic()
-        .map((empresa) => calcularMetricasEmpresa(empresa, empresaRepository.findQuotesByCompanyId(empresa.id)))
+        .findAllWithQuotes()
+        .map(({ cotizaciones, ...empresa }) => calcularMetricasEmpresa(empresa, cotizaciones))
         .filter(Boolean)
         .sort(criteriosRanking[criterio]);
 };
@@ -115,8 +115,8 @@ const filtrar = (parametro, valor) => {
     if (parametro === 'pais') return empresaRepository.findByOperatingCountry(valor ?? '');
 
     const empresasConMetricas = empresaRepository
-        .findAllWithDetails()
-        .map((empresa) => calcularMetricasEmpresa(empresa, empresaRepository.findQuotesByCompanyId(empresa.id)))
+        .findAllWithQuotes()
+        .map(({ cotizaciones, ...empresa }) => calcularMetricasEmpresa(empresa, cotizaciones))
         .filter(Boolean);
 
     if (parametro === 'precio_min') return empresasConMetricas.filter((empresa) => empresa.precio_actual >= valor);

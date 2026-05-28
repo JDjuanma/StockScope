@@ -60,10 +60,43 @@ const findQuotesByCompanyId = (idEmpresa, columns = 'fecha, precio, volumen') =>
     `).all({ idEmpresa });
 };
 
+const findAllWithQuotes = () => {
+    const rows = db.prepare(`
+        SELECT Empresa.id, Empresa.nombre, Empresa.simbolo,
+               Sector.nombre AS sector, Pais.nombre AS pais_origen,
+               Cotizacion.fecha, Cotizacion.precio, Cotizacion.volumen
+        FROM Empresa
+        JOIN Sector ON Empresa.id_sector = Sector.id
+        JOIN Pais ON Empresa.id_pais_origen = Pais.id
+        LEFT JOIN Cotizacion ON Cotizacion.id_empresa = Empresa.id
+        ORDER BY Empresa.nombre ASC, Cotizacion.fecha ASC
+    `).all();
+
+    const map = new Map();
+    for (const row of rows) {
+        if (!map.has(row.id)) {
+            map.set(row.id, {
+                id: row.id,
+                nombre: row.nombre,
+                simbolo: row.simbolo,
+                sector: row.sector,
+                pais_origen: row.pais_origen,
+                cotizaciones: [],
+            });
+        }
+        if (row.fecha !== null) {
+            map.get(row.id).cotizaciones.push({ fecha: row.fecha, precio: row.precio, volumen: row.volumen });
+        }
+    }
+
+    return [...map.values()];
+};
+
 module.exports = {
     findByName,
     findAllBasic,
     findAllWithDetails,
+    findAllWithQuotes,
     findBySector,
     findByOperatingCountry,
     findQuotesByCompanyId,
