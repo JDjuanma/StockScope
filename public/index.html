@@ -1,0 +1,201 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StockScope</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
+
+  <nav class="navbar navbar-expand-lg bg-dark navbar-dark" aria-label="Navegación principal">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="/" aria-label="StockScope, ir al inicio">StockScope</a>
+      <span class="navbar-text">Análisis simple de empresas y cotizaciones</span>
+    </div>
+  </nav>
+
+  <main id="main-content" class="container py-4" tabindex="-1">
+    <section class="hero p-4 p-md-5 mb-4 rounded-4 text-white" aria-labelledby="page-title">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <p class="text-uppercase small mb-2">Proyecto académico</p>
+          <h1 id="page-title" class="display-6 fw-bold mb-3">Elegí qué análisis querés hacer.</h1>
+          <p class="lead mb-0">StockScope conecta una interfaz Bootstrap con una API Express y una base SQLite.</p>
+        </div>
+        <div class="col-lg-4">
+          <div class="card bg-light text-dark shadow-sm border-0">
+            <div class="card-body">
+              <h2 class="h6 text-uppercase text-secondary">Cómo usarlo</h2>
+              <p class="mb-0 small">Primero seleccioná una función. Después se despliega solo el formulario necesario.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-4" aria-labelledby="features-title">
+      <div class="d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap">
+        <div>
+          <h2 id="features-title" class="h4 mb-1">Funciones disponibles</h2>
+          <p class="text-secondary mb-0">Seleccioná una opción para empezar.</p>
+        </div>
+        <button id="home-button" class="btn btn-outline-secondary d-none" type="button">Volver al menú</button>
+      </div>
+
+      <div id="feature-menu" class="row g-3">
+        <div class="col-md-6 col-xl-4">
+          <button class="feature-card" type="button" data-feature="company-panel" aria-controls="company-panel" aria-expanded="false">
+            <span class="feature-icon" aria-hidden="true">🔎</span>
+            <span class="feature-title">Buscar empresa</span>
+            <span class="feature-description">Datos principales por nombre.</span>
+          </button>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <button class="feature-card" type="button" data-feature="evolution-panel" aria-controls="evolution-panel" aria-expanded="false">
+            <span class="feature-icon" aria-hidden="true">📈</span>
+            <span class="feature-title">Ver evolución</span>
+            <span class="feature-description">Precio inicial, actual y variación.</span>
+          </button>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <button class="feature-card" type="button" data-feature="compare-panel" aria-controls="compare-panel" aria-expanded="false">
+            <span class="feature-icon" aria-hidden="true">⚖️</span>
+            <span class="feature-title">Comparar empresas</span>
+            <span class="feature-description">Comparación por rendimiento.</span>
+          </button>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <button class="feature-card" type="button" data-feature="ranking-panel" aria-controls="ranking-panel" aria-expanded="false">
+            <span class="feature-icon" aria-hidden="true">🏆</span>
+            <span class="feature-title">Ranking</span>
+            <span class="feature-description">Orden por precio, variación, volumen o volatilidad.</span>
+          </button>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <button class="feature-card" type="button" data-feature="filter-panel" aria-controls="filter-panel" aria-expanded="false">
+            <span class="feature-icon" aria-hidden="true">🧭</span>
+            <span class="feature-title">Filtrar empresas</span>
+            <span class="feature-description">Sector, país, precio o variación.</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <div id="alert" class="alert d-none" role="alert" aria-live="assertive"></div>
+
+    <section id="active-feature" class="d-none" aria-live="polite">
+      <div id="company-panel" class="feature-panel d-none" tabindex="-1">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h2 class="h4">Buscar empresa</h2>
+            <p id="company-help" class="text-secondary">Buscá una empresa por nombre y revisá sus datos principales.</p>
+            <form id="company-form" class="input-group mb-3" aria-describedby="company-help">
+              <label class="visually-hidden" for="company-name">Nombre de la empresa</label>
+              <input id="company-name" class="form-control" type="text" placeholder="Ej: Apple" autocomplete="off" required>
+              <button class="btn btn-primary" type="submit">Buscar</button>
+            </form>
+            <div id="company-result" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="evolution-panel" class="feature-panel d-none" tabindex="-1">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h2 class="h4">Ver evolución</h2>
+            <p id="evolution-help" class="text-secondary">Consultá precio inicial, precio actual y variación porcentual.</p>
+            <form id="evolution-form" class="input-group mb-3" aria-describedby="evolution-help">
+              <label class="visually-hidden" for="evolution-name">Nombre de la empresa para ver evolución</label>
+              <input id="evolution-name" class="form-control" type="text" placeholder="Ej: Microsoft" autocomplete="off" required>
+              <button class="btn btn-primary" type="submit">Ver</button>
+            </form>
+            <div id="evolution-result" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="compare-panel" class="feature-panel d-none" tabindex="-1">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h2 class="h4">Comparar empresas</h2>
+            <p id="compare-help" class="text-secondary">Compará dos empresas por su variación en el período cargado.</p>
+            <form id="compare-form" class="row g-2 mb-3" aria-describedby="compare-help">
+              <div class="col-md-5">
+                <label class="visually-hidden" for="compare-company-one">Primera empresa</label>
+                <input id="compare-company-one" class="form-control" type="text" placeholder="Apple" autocomplete="off" required>
+              </div>
+              <div class="col-md-5">
+                <label class="visually-hidden" for="compare-company-two">Segunda empresa</label>
+                <input id="compare-company-two" class="form-control" type="text" placeholder="Microsoft" autocomplete="off" required>
+              </div>
+              <div class="col-md-2 d-grid">
+                <button class="btn btn-primary" type="submit">Comparar</button>
+              </div>
+            </form>
+            <div id="compare-result" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ranking-panel" class="feature-panel d-none" tabindex="-1">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h2 class="h4">Ranking</h2>
+            <p id="ranking-help" class="text-secondary">Ordená empresas por una métrica del servicio.</p>
+            <form id="ranking-form" class="input-group mb-3" aria-describedby="ranking-help">
+              <label class="visually-hidden" for="ranking-criterion">Criterio del ranking</label>
+              <select id="ranking-criterion" class="form-select">
+                <option value="precio_actual">Precio actual</option>
+                <option value="variacion">Variación</option>
+                <option value="volumen">Volumen</option>
+                <option value="volatilidad">Volatilidad</option>
+              </select>
+              <button class="btn btn-primary" type="submit">Rankear</button>
+            </form>
+            <div id="ranking-result" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="filter-panel" class="feature-panel d-none" tabindex="-1">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h2 class="h4">Filtrar empresas</h2>
+            <p id="filter-help" class="text-secondary">Filtrá por sector, país, precio mínimo, precio máximo o variación.</p>
+            <form id="filter-form" class="row g-2 mb-3" aria-describedby="filter-help">
+              <div class="col-md-4">
+                <label class="visually-hidden" for="filter-param">Parámetro de filtro</label>
+                <select id="filter-param" class="form-select">
+                  <option value="sector">Sector</option>
+                  <option value="pais">País donde opera</option>
+                  <option value="precio_min">Precio mínimo</option>
+                  <option value="precio_max">Precio máximo</option>
+                  <option value="variacion_positiva">Variación positiva</option>
+                  <option value="variacion_negativa">Variación negativa</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="visually-hidden" for="filter-value">Valor del filtro</label>
+                <input id="filter-value" class="form-control" type="text" placeholder="Ej: Tecnología, Argentina o 200" autocomplete="off">
+              </div>
+              <div class="col-md-2 d-grid">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+              </div>
+            </form>
+            <div id="filter-result" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-top py-3 mt-4">
+    <div class="container text-center text-secondary small">StockScope · Node.js, Express, SQLite y Bootstrap</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

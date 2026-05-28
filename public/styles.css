@@ -1,0 +1,144 @@
+﻿:root {
+  --brand-start: #172554;
+  --brand-end: #2563eb;
+}
+
+body {
+  background: #f4f7fb;
+}
+
+.navbar-dark .navbar-text {
+  color: #ffffff;
+}
+
+.text-secondary {
+  color: #334155 !important;
+}
+
+.form-control::placeholder {
+  color: #475569;
+  opacity: 1;
+}
+
+.btn-outline-secondary {
+  color: #334155;
+  border-color: #334155;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  color: #ffffff;
+  background-color: #334155;
+  border-color: #334155;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: .5rem;
+  z-index: 1000;
+  padding: .5rem .75rem;
+  color: #ffffff;
+  background: #0f172a;
+  border-radius: .5rem;
+  transform: translateY(-150%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.hero {
+  background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+}
+
+.card {
+  border: 0;
+  border-radius: 1rem;
+}
+
+.feature-card {
+  width: 100%;
+  height: 100%;
+  min-height: 170px;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 .5rem 1.5rem rgba(15, 23, 42, .06);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.feature-card:hover,
+.feature-card:focus-visible {
+  border-color: #2563eb;
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+  box-shadow: 0 .75rem 2rem rgba(37, 99, 235, .16);
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: .75rem;
+}
+
+.feature-title {
+  display: block;
+  color: #0f172a;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: .35rem;
+}
+
+.feature-description {
+  display: block;
+  color: #475569;
+}
+
+.feature-panel {
+  animation: fadeIn .18s ease-in-out;
+}
+
+.result-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: .75rem;
+  padding: 1rem;
+}
+
+.metric {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: .75rem;
+  padding: .75rem;
+}
+
+.metric .label {
+  color: #475569;
+  font-size: .8rem;
+  text-transform: uppercase;
+}
+
+.metric .value {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.table-responsive {
+  max-height: 360px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

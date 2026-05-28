@@ -1,21 +1,22 @@
-# Contexto del proyecto StockScope
+﻿# Contexto del proyecto StockScope
 ## Stack
-- Node.js + JavaScript (backend)
+- Node.js + JavaScript
+- Express
 - SQLite con better-sqlite3
-- HTML/CSS/JS (frontend, próxima etapa)
+- HTML/CSS/JS + Bootstrap
 
 ## Arquitectura en capas
 - src/repository/ → habla con la base de datos
 - src/services/   → lógica de negocio y cálculos
-- src/server.js   → API Express para exponer los servicios
-- public/         → interfaz de usuario (próxima etapa)
+- src/server.js   → API Express y archivos estáticos
+- public/         → interfaz web
 
 ## Estado actual
 - Etapa 1 ✅ Estructura del proyecto y Git
 - Etapa 2 ✅ Base de datos con 5 tablas y seed de 1300 cotizaciones
 - Etapa 3 ✅ Capa de servicios completa
-- Etapa 4 🟡 Parcial: API con Express completada; interfaz web pendiente
-- Etapa 5 🟡 Parcial: README mejorado; cierre final pendiente
+- Etapa 4 ✅ API con Express + interfaz web básica
+- Etapa 5 🟡 README mejorado; cierre final pendiente
 
 ## Funciones completadas
 - src/repository/database.js → conexión y creación de tablas
@@ -34,6 +35,13 @@
 - `GET /api/ranking/:criterio`
 - `GET /api/filtrar?parametro=...&valor=...`
 
+## Interfaz web completada
+- `public/index.html` → página principal con selector de funciones y secciones desplegables
+- `public/styles.css` → estilos propios mínimos
+- `public/app.js` → consumo de API con fetch y render de resultados
+
 ## Próximos pasos
-1. Interfaz web en `public/`
-2. README final y cierre
+1. Revisar diseño visual final.
+2. Probar manualmente más casos de búsqueda/filtros.
+3. Cierre final del README si el docente pide más detalle.
+
