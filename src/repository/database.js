@@ -3,21 +3,23 @@ const path = require('path');
 
 const db = new Database(path.join(__dirname, '../../data/stockscope.db'));
 
+db.pragma('foreign_keys = ON');
+
 db.exec(`
     CREATE TABLE IF NOT EXISTS Pais (
         id INTEGER PRIMARY KEY,
-        nombre VARCHAR NOT NULL
+        nombre VARCHAR NOT NULL UNIQUE
     );
 
     CREATE TABLE IF NOT EXISTS Sector (
         id INTEGER PRIMARY KEY,
-        nombre VARCHAR NOT NULL
+        nombre VARCHAR NOT NULL UNIQUE
     );
 
     CREATE TABLE IF NOT EXISTS Empresa (
         id INTEGER PRIMARY KEY,
         nombre VARCHAR NOT NULL,
-        simbolo VARCHAR NOT NULL,
+        simbolo VARCHAR NOT NULL UNIQUE,
         id_sector INTEGER NOT NULL,
         id_pais_origen INTEGER NOT NULL,
         FOREIGN KEY (id_sector) REFERENCES Sector(id),
@@ -40,6 +42,18 @@ db.exec(`
         volumen REAL NOT NULL,
         FOREIGN KEY (id_empresa) REFERENCES Empresa(id)
     );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_cotizacion_empresa_fecha
+    ON Cotizacion(id_empresa, fecha);
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_pais_nombre
+    ON Pais(nombre);
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_sector_nombre
+    ON Sector(nombre);
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_empresa_simbolo
+    ON Empresa(simbolo);
 `);
 
 module.exports = db;

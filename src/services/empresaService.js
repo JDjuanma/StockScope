@@ -1,47 +1,71 @@
-const db = require('../repository/database');
+const empresaRepository = require('../repository/empresaRepository');
 
-// TODO: get() solo devuelve el primero, si hay dos empresas con nombre parecido
-// puede traer la equivocada. Ver si conviene cambiar a all() más adelante.
-const buscarEmpresa = (nombre) => {
-    const stmt = db.prepare(`
-    SELECT Empresa.*, Sector.nombre AS sector, Pais.nombre AS pais_origen
-    FROM Empresa
-    JOIN Sector ON Empresa.id_sector = Sector.id
-    JOIN Pais ON Empresa.id_pais_origen = Pais.id
-    WHERE Empresa.nombre LIKE @nombre
-`);
-    return stmt.get({ nombre: `%${nombre}%` });
+const criteriosRanking = {
+    variacion: (a, b) => b.variacion_porcentual - a.variacion_porcentual,
+    precio_actual: (a, b) => b.precio_actual - a.precio_actual,
+    volumen: (a, b) => b.volumen_promedio - a.volumen_promedio,
+    volatilidad: (a, b) => b.volatilidad - a.volatilidad,
 };
 
-const verEvolucion = (nombre) => {
-    const empresa = buscarEmpresa(nombre);
-    if (!empresa) return null;
+const parametrosFiltro = ['sector', 'pais', 'precio_min', 'precio_max', 'variacion_positiva', 'variacion_negativa'];
 
-    const cotizaciones = db.prepare(`
-        SELECT fecha, precio, volumen
-        FROM Cotizacion
-        WHERE id_empresa = @id
-        ORDER BY fecha ASC
-    `).all({ id: empresa.id });
+const redondear = (numero, decimales = 2) => parseFloat(numero.toFixed(decimales));
 
-    if (cotizaciones.length === 0) return { empresa, cotizaciones: [], resumen: null };
+const buscarEmpresa = (nombre) => {
+    if (!nombre || typeof nombre !== 'string') return null;
+    return empresaRepository.findByName(nombre.trim());
+};
 
-    const precios = cotizaciones.map(c => c.precio);
+const calcularResumenCotizaciones = (cotizaciones) => {
+    if (cotizaciones.length === 0) return null;
+
+    const precios = cotizaciones.map((cotizacion) => cotizacion.precio);
     const primera = cotizaciones[0];
     const ultima = cotizaciones[cotizaciones.length - 1];
     const variacion = ((ultima.precio - primera.precio) / primera.precio) * 100;
 
-    const resumen = {
+    return {
         precio_inicial: primera.precio,
         precio_actual: ultima.precio,
-        variacion_porcentual: parseFloat(variacion.toFixed(2)),
+        variacion_porcentual: redondear(variacion),
         precio_minimo: Math.min(...precios),
         precio_maximo: Math.max(...precios),
         cantidad_registros: cotizaciones.length,
         fecha_inicio: primera.fecha,
         fecha_fin: ultima.fecha,
     };
-    return { empresa, cotizaciones, resumen };
+};
+
+const calcularMetricasEmpresa = (empresa, cotizaciones) => {
+    if (cotizaciones.length === 0) return null;
+
+    const precios = cotizaciones.map((cotizacion) => cotizacion.precio);
+    const primera = precios[0];
+    const ultima = precios[precios.length - 1];
+    const variacion = ((ultima - primera) / primera) * 100;
+    const volumenPromedio = cotizaciones.reduce((sum, cotizacion) => sum + cotizacion.volumen, 0) / cotizaciones.length;
+    const media = precios.reduce((sum, precio) => sum + precio, 0) / precios.length;
+    const volatilidad = Math.sqrt(precios.reduce((sum, precio) => sum + Math.pow(precio - media, 2), 0) / precios.length);
+
+    return {
+        ...empresa,
+        precio_actual: ultima,
+        variacion_porcentual: redondear(variacion),
+        volumen_promedio: redondear(volumenPromedio, 0),
+        volatilidad: redondear(volatilidad),
+    };
+};
+
+const verEvolucion = (nombre) => {
+    const empresa = buscarEmpresa(nombre);
+    if (!empresa) return null;
+
+    const cotizaciones = empresaRepository.findQuotesByCompanyId(empresa.id);
+    return {
+        empresa,
+        cotizaciones,
+        resumen: calcularResumenCotizaciones(cotizaciones),
+    };
 };
 
 const compararEmpresas = (nombre1, nombre2) => {
@@ -63,134 +87,42 @@ const compararEmpresas = (nombre1, nombre2) => {
         return { empresa1: evolucion1, empresa2: evolucion2, ganadora: null };
     }
 
-    let ganadora;
+    let ganadora = 'empate';
     if (var1 > var2) ganadora = evolucion1.empresa.nombre;
-    else if (var2 > var1) ganadora = evolucion2.empresa.nombre;
-    else ganadora = 'empate';
+    if (var2 > var1) ganadora = evolucion2.empresa.nombre;
 
     return { empresa1: evolucion1, empresa2: evolucion2, ganadora };
 };
 
 const rankear = (criterio) => {
-    const criteriosValidos = ['variacion', 'precio_actual', 'volumen', 'volatilidad'];
-    if (!criteriosValidos.includes(criterio)) {
-        return { error: `Criterio inválido. Opciones: ${criteriosValidos.join(', ')}` };
+    if (!Object.hasOwn(criteriosRanking, criterio)) {
+        return { error: `Criterio inválido. Opciones: ${Object.keys(criteriosRanking).join(', ')}` };
     }
 
-    const empresas = db.prepare('SELECT id, nombre, simbolo FROM Empresa').all();
-
-    const stmtCotizaciones = db.prepare(`
-        SELECT precio, volumen
-        FROM Cotizacion
-        WHERE id_empresa = @id
-        ORDER BY fecha ASC
-    `);
-
-    const ranking = empresas.map(empresa => {
-        const cotizaciones = stmtCotizaciones.all({ id: empresa.id });
-
-        if (cotizaciones.length === 0) return null;
-
-        const precios = cotizaciones.map(c => c.precio);
-        const primera = precios[0];
-        const ultima = precios[precios.length - 1];
-        const variacion = parseFloat(((ultima - primera) / primera * 100).toFixed(2));
-        const volumen_promedio = parseFloat(
-            (cotizaciones.reduce((sum, c) => sum + c.volumen, 0) / cotizaciones.length).toFixed(0)
-        );
-
-        const media = precios.reduce((sum, p) => sum + p, 0) / precios.length;
-        const volatilidad = parseFloat(
-            Math.sqrt(precios.reduce((sum, p) => sum + Math.pow(p - media, 2), 0) / precios.length).toFixed(2)
-        );
-
-        return {
-            nombre: empresa.nombre,
-            simbolo: empresa.simbolo,
-            precio_actual: ultima,
-            variacion_porcentual: variacion,
-            volumen_promedio,
-            volatilidad,
-        };
-    }).filter(Boolean);
-
-    const criterioMap = {
-        variacion:     (a, b) => b.variacion_porcentual - a.variacion_porcentual,
-        precio_actual: (a, b) => b.precio_actual - a.precio_actual,
-        volumen:       (a, b) => b.volumen_promedio - a.volumen_promedio,
-        volatilidad:   (a, b) => b.volatilidad - a.volatilidad,
-    };
-
-    return ranking.sort(criterioMap[criterio]);
+    return empresaRepository
+        .findAllBasic()
+        .map((empresa) => calcularMetricasEmpresa(empresa, empresaRepository.findQuotesByCompanyId(empresa.id)))
+        .filter(Boolean)
+        .sort(criteriosRanking[criterio]);
 };
 
 const filtrar = (parametro, valor) => {
-    const parametrosValidos = ['sector', 'pais', 'precio_min', 'precio_max', 'variacion_positiva', 'variacion_negativa'];
-    if (!parametrosValidos.includes(parametro)) {
-        return { error: `Parámetro inválido. Opciones: ${parametrosValidos.join(', ')}` };
+    if (!parametrosFiltro.includes(parametro)) {
+        return { error: `Parámetro inválido. Opciones: ${parametrosFiltro.join(', ')}` };
     }
 
-    let empresas;
+    if (parametro === 'sector') return empresaRepository.findBySector(valor ?? '');
+    if (parametro === 'pais') return empresaRepository.findByOperatingCountry(valor ?? '');
 
-    if (parametro === 'sector') {
-        empresas = db.prepare(`
-            SELECT Empresa.id, Empresa.nombre, Empresa.simbolo, Sector.nombre AS sector, Pais.nombre AS pais_origen
-            FROM Empresa
-            JOIN Sector ON Empresa.id_sector = Sector.id
-            JOIN Pais ON Empresa.id_pais_origen = Pais.id
-            WHERE Sector.nombre LIKE @valor
-        `).all({ valor: `%${valor}%` });
+    const empresasConMetricas = empresaRepository
+        .findAllWithDetails()
+        .map((empresa) => calcularMetricasEmpresa(empresa, empresaRepository.findQuotesByCompanyId(empresa.id)))
+        .filter(Boolean);
 
-    } else if (parametro === 'pais') {
-        empresas = db.prepare(`
-            SELECT DISTINCT Empresa.id, Empresa.nombre, Empresa.simbolo, Sector.nombre AS sector, Pais.nombre AS pais_origen
-            FROM Empresa
-            JOIN Sector ON Empresa.id_sector = Sector.id
-            JOIN Pais ON Empresa.id_pais_origen = Pais.id
-            JOIN Empresa_Pais ON Empresa.id = Empresa_Pais.id_empresa
-            JOIN Pais AS PaisOpera ON Empresa_Pais.id_pais = PaisOpera.id
-            WHERE PaisOpera.nombre LIKE @valor
-        `).all({ valor: `%${valor}%` });
-
-    } else {
-        // para precio_min, precio_max, variacion_positiva, variacion_negativa
-        // traemos todas y filtramos en JS con los precios calculados
-        empresas = db.prepare(`
-            SELECT Empresa.id, Empresa.nombre, Empresa.simbolo, Sector.nombre AS sector, Pais.nombre AS pais_origen
-            FROM Empresa
-            JOIN Sector ON Empresa.id_sector = Sector.id
-            JOIN Pais ON Empresa.id_pais_origen = Pais.id
-        `).all();
-    }
-
-    // para sector y pais solo devolvemos la lista sin calcular precios
-    if (parametro === 'sector' || parametro === 'pais') {
-        return empresas;
-    }
-
-    // para los otros parámetros calculamos precio actual y variación
-    const stmtCotizaciones = db.prepare(`
-        SELECT precio
-        FROM Cotizacion
-        WHERE id_empresa = @id
-        ORDER BY fecha ASC
-    `);
-
-    const resultado = empresas.map(empresa => {
-        const cotizaciones = stmtCotizaciones.all({ id: empresa.id });
-        if (cotizaciones.length === 0) return null;
-
-        const primera = cotizaciones[0].precio;
-        const ultima = cotizaciones[cotizaciones.length - 1].precio;
-        const variacion = parseFloat(((ultima - primera) / primera * 100).toFixed(2));
-
-        return { ...empresa, precio_actual: ultima, variacion_porcentual: variacion };
-    }).filter(Boolean);
-
-    if (parametro === 'precio_min')          return resultado.filter(e => e.precio_actual >= valor);
-    if (parametro === 'precio_max')          return resultado.filter(e => e.precio_actual <= valor);
-    if (parametro === 'variacion_positiva')  return resultado.filter(e => e.variacion_porcentual > 0);
-    if (parametro === 'variacion_negativa')  return resultado.filter(e => e.variacion_porcentual < 0);
+    if (parametro === 'precio_min') return empresasConMetricas.filter((empresa) => empresa.precio_actual >= valor);
+    if (parametro === 'precio_max') return empresasConMetricas.filter((empresa) => empresa.precio_actual <= valor);
+    if (parametro === 'variacion_positiva') return empresasConMetricas.filter((empresa) => empresa.variacion_porcentual > 0);
+    if (parametro === 'variacion_negativa') return empresasConMetricas.filter((empresa) => empresa.variacion_porcentual < 0);
 };
 
-module.exports = { buscarEmpresa, verEvolucion, compararEmpresas, rankear, filtrar};
+module.exports = { buscarEmpresa, verEvolucion, compararEmpresas, rankear, filtrar };
