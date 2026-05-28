@@ -64,6 +64,7 @@ test('rankear orders by selected criterion', () => {
 test('filtrar supports sector, country, price and variation filters', () => {
     assert.ok(filtrar('sector', 'Tecnología').every((empresa) => empresa.sector === 'Tecnología'));
     assert.ok(filtrar('pais', 'Argentina').some((empresa) => empresa.nombre === 'Mercado Libre'));
+    assert.ok(filtrar('pais', 'USA').every((empresa) => empresa.pais_operacion === 'USA'));
     assert.ok(filtrar('precio_min', 200).every((empresa) => empresa.precio_actual >= 200));
     assert.ok(filtrar('variacion_positiva').every((empresa) => empresa.variacion_porcentual > 0));
 });

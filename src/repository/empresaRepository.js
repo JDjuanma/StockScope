@@ -40,7 +40,7 @@ const findBySector = (sector) => {
 
 const findByOperatingCountry = (pais) => {
     return db.prepare(`
-        SELECT DISTINCT Empresa.id, Empresa.nombre, Empresa.simbolo, Sector.nombre AS sector, Pais.nombre AS pais_origen
+        SELECT DISTINCT Empresa.id, Empresa.nombre, Empresa.simbolo, Sector.nombre AS sector, Pais.nombre AS pais_origen, PaisOpera.nombre AS pais_operacion
         FROM Empresa
         JOIN Sector ON Empresa.id_sector = Sector.id
         JOIN Pais ON Empresa.id_pais_origen = Pais.id

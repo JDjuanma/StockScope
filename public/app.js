@@ -3,6 +3,10 @@ const featureMenu = document.querySelector('#feature-menu');
 const activeFeature = document.querySelector('#active-feature');
 const homeButton = document.querySelector('#home-button');
 const featurePanels = document.querySelectorAll('.feature-panel');
+const filterParam = document.querySelector('#filter-param');
+const filterValueGroup = document.querySelector('#filter-value-group');
+const filterValue = document.querySelector('#filter-value');
+const filtersWithoutValue = ['variacion_positiva', 'variacion_negativa'];
 
 const formatNumber = (value) => new Intl.NumberFormat('es-UY', {
   maximumFractionDigits: 2,
@@ -121,6 +125,7 @@ const renderTable = (items) => {
       <td>${empresa.simbolo || '-'}</td>
       <td>${empresa.sector || '-'}</td>
       <td>${empresa.pais_origen || '-'}</td>
+      <td>${empresa.pais_operacion || '-'}</td>
       <td>${empresa.precio_actual === undefined ? '-' : `$${formatNumber(empresa.precio_actual)}`}</td>
       <td>${empresa.variacion_porcentual === undefined ? '-' : `${formatNumber(empresa.variacion_porcentual)}%`}</td>
     </tr>
@@ -135,7 +140,8 @@ const renderTable = (items) => {
             <th scope="col">Empresa</th>
             <th scope="col">Símbolo</th>
             <th scope="col">Sector</th>
-            <th scope="col">País</th>
+            <th scope="col">País origen</th>
+            <th scope="col">Opera en</th>
             <th scope="col">Precio</th>
             <th scope="col">Variación</th>
           </tr>
@@ -165,6 +171,17 @@ document.querySelectorAll('[data-feature]').forEach((button) => {
 
 homeButton.addEventListener('click', showMenu);
 
+const updateFilterValueVisibility = () => {
+  const shouldHideValue = filtersWithoutValue.includes(filterParam.value);
+
+  filterValueGroup.classList.toggle('d-none', shouldHideValue);
+  filterValue.disabled = shouldHideValue;
+  filterValue.value = shouldHideValue ? '' : filterValue.value;
+};
+
+filterParam.addEventListener('change', updateFilterValueVisibility);
+updateFilterValueVisibility();
+
 handleForm('#company-form', async () => {
   const name = document.querySelector('#company-name').value.trim();
   const data = await requestJson(`/api/empresa/${encodeURIComponent(name)}`);
@@ -191,8 +208,8 @@ handleForm('#ranking-form', async () => {
 });
 
 handleForm('#filter-form', async () => {
-  const param = document.querySelector('#filter-param').value;
-  const value = document.querySelector('#filter-value').value.trim();
+  const param = filterParam.value;
+  const value = filterValue.value.trim();
   const url = value
     ? `/api/filtrar?parametro=${encodeURIComponent(param)}&valor=${encodeURIComponent(value)}`
     : `/api/filtrar?parametro=${encodeURIComponent(param)}`;
